@@ -28,6 +28,7 @@ from libqtile import bar, layout, qtile, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
+import subprocess
 
 
 mod = "mod4"
@@ -60,8 +61,18 @@ keys = [
     Key([mod], "space", lazy.spawn("rofi -show drun")),
     # Volume control key binds
     Key([], "XF86AudioMute", lazy.spawn("amixer -q set Master toggle")),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer -c 0 sset Master 1+ unmute")),
-    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer -c 0 sset Master 1- unmute")),
+    Key([mod],
+        "equal",
+        lazy.spawn("amixer -c 2 sset Master 1+ unmute"),
+        lazy.spawn("amixer -c 1 sset Master 2+ unmute")
+        ),
+    Key([mod],
+        "minus",
+        lazy.spawn("amixer -c 2 sset Master 1- unmute"),
+        lazy.spawn("amixer -c 1 sset Master 1- unmute")
+        ),
+    #Key([mod], "equal", lazy.spawn("amixer -c 1 sset Master 1+ unmute")),
+    #Key([mod], "minus", lazy.spawn("amixer -c 1 sset Master 1- unmute")),
     # Screen Brightness control key binds
     Key([], "XF86MonBrightnessUp", lazy.spawn("light -A 5")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("light -U 5"))
@@ -109,18 +120,22 @@ layouts = [
     # layout.Zoomy(),
 ]
 colors = [
-    ["#002b36"], #bg
-    ["#839496"], #fg
-    ["#073642"], #01
-    ["#dc322f"], #02
-    ["#859900"], #03
-    ["#b58900"], #04
-    ["#268bd2"], #05
-    ["#d33682"], #06
-    ["#2aa198"]  #15
+    ["#002b36", "#002b36"], # background 0
+    ["#839496", "#839496"], # grey 1
+    ["#073642", "#073642"], # different shade of backgroud color 2
+    ["#dc322f", "#dc322f"], # Red 3
+    ["#859900", "#859900"], # Green 4
+    ["#b58900", "#b58900"], # Yellow 5
+    ["#268bd2", "#268bd2"], # Blue 6
+    ["#d33682", "#d33682"], # Magenta 7
+    ["#2aa198", "#2aa198"], # Cyan 8
+    ["#FFFFFF", "#FFFFFF"], # White 9
+    ["#000000", "#000000"], # Black 10
+    ["#6c71c4", "#6c71c4"], # Violet 11
+    ["#cb4b16", "#cb4b16"]  # Orange 12
 ]
 widget_defaults = dict(
-    font="sans",
+    font="jetbrainsmono",
     fontsize=12,
     padding=3,
 )
@@ -130,21 +145,99 @@ screens = [
     Screen(
         bottom=bar.Bar(
             [
-                widget.CurrentLayout(),
-                widget.GroupBox(active=colors[8], inactive=colors[1], highlight_color=colors[2]),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
+                widget.Sep(
+                    linewidth = 0,
+                    padding = 6,
+                    foreground = colors[2],
+                    background = colors[0]
                 ),
-                widget.Battery(format="Battery: {percent:2.0%}", background=colors[3]),
-                widget.Backlight(backlight_name="intel_backlight", format="Brightness: {percent:2.0%}"),
-                widget.Systray(),
-                widget.Volume(format="Volume: {percent:2.0%}"),
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+                widget.GroupBox(
+                    fontsize = 18,
+                    margin_y = 4,
+                    margin_x = 0,
+                    padding_y =10,
+                    padding_x = 10,
+                    borderwidth = 1,
+                    active = colors[9],
+                    inactive = colors[10],
+                    rounded = False,
+                    highlight_method = "block",
+                    this_current_screen_border = colors[12],
+                    this_screen_border = colors[6],
+                    other_current_screen_border = colors[12],
+                    other_screen_border = colors[6],
+                    foreground = colors[2],
+                    background = colors[0],
+                ),
+                widget.WindowName(
+                    background = colors[0],
+                    foreground = colors[9],
+                    fontsize = 18
+                ),
+                widget.TextBox(
+                    background = colors[0],
+                    foreground = colors[3],
+                    fontsize = 60,
+                    text = "◀",
+                    padding = 0,
+                ),
+                widget.CheckUpdates(
+                    distro = "Arch",
+                    background = colors[3],
+                    foreground = colors[10],
+                    display_format = "Updates: {updates}",
+                    no_update_string = "No Updates",
+                    fontsize = 18
+                ),
+                widget.TextBox(
+                    background = colors[3],
+                    foreground = colors[7],
+                    fontsize = 60,
+                    text = "◀",
+                    padding = 0,
+                ),
+                widget.TextBox(
+                    background = colors[7],
+                    foreground = colors[9],
+                    fontsize = 18,
+                    text = "🔈"
+                ),
+                widget.GenPollText(
+                    update_interval=0.1,
+                    func = lambda: subprocess.check_output("/home/Heriberto/.local/bin/volumeOne").decode("utf-8"),
+                    background = colors[7],
+                    fontsize = 18,
+                ),
+                widget.GenPollText(
+                    update_interval=0.1,
+                    func = lambda: subprocess.check_output("/home/Heriberto/.local/bin/volumeTwo").decode("utf-8"),
+                    background = colors[7],
+                    fontsize = 18,
+                ),
+                widget.TextBox(
+                    background = colors[7],
+                    foreground = colors[5],
+                    fontsize = 60,
+                    text = "◀",
+                    padding = 0,
+                ),
+                widget.Systray(
+                    background = colors[5],
+                    fontsize = 18
+                ),
+                widget.TextBox(
+                    background = colors[5],
+                    foreground = colors[8],
+                    fontsize = 60,
+                    text = "◀",
+                    padding = 0,
+                ),
+                widget.Clock(
+                    format="%a %m-%d-%Y %I:%m %p",
+                    fontsize = 18,
+                    background = colors[8],
+                    foreground = colors[10]
+                ),
             ],
             24,
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
@@ -189,3 +282,4 @@ auto_minimize = True
 # When using the Wayland backend, this can be used to configure input devices.
 wl_input_rules = None
 wmname = "LG3D"
+
